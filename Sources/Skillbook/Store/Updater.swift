@@ -237,12 +237,14 @@ final class Updater {
         try? FileManager.default.removeItem(at: newApp.deletingLastPathComponent().deletingLastPathComponent())
     }
 
-    /// Quits, then reopens the app once this process has exited.
+    /// Quits, then reopens the app once this process has exited. The window comes back
+    /// only if it was open; otherwise Skillbook returns to the menu bar alone.
     private static func relaunch(_ bundle: URL) {
+        let windowOpen = NSApp.windows.contains { $0.styleMask.contains(.titled) && $0.isVisible }
         let shell = Process()
         shell.executableURL = URL(fileURLWithPath: "/bin/sh")
-        shell.arguments = ["-c", "while kill -0 \"$1\" 2>/dev/null; do sleep 0.2; done; /usr/bin/open \"$2\"",
-                           "sh", String(getpid()), bundle.path]
+        shell.arguments = ["-c", "while kill -0 \"$1\" 2>/dev/null; do sleep 0.2; done; /usr/bin/open \"$2\" --args \"$3\"",
+                           "sh", String(getpid()), bundle.path, windowOpen ? "--open" : Launch.backgroundFlag]
         try? shell.run()
         NSApp.terminate(nil)
     }
