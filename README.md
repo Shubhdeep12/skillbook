@@ -12,7 +12,7 @@ Paste this into Terminal:
 curl -fsSL https://skillbook.okshubh.in/install.sh | bash
 ```
 
-It downloads the latest release, puts Skillbook.app in `/Applications` (or `~/Applications`) and opens it. Installing this way skips the "Apple could not verify" warning, because files downloaded with curl aren't quarantined. The script is [`site/public/install.sh`](site/public/install.sh). Run the same command again to update.
+It downloads the latest release, puts Skillbook.app in `/Applications` (or `~/Applications`) and opens it. Installing this way skips the "Apple could not verify" warning, because files downloaded with curl aren't quarantined. The script is [`site/public/install.sh`](site/public/install.sh). Skillbook keeps itself up to date: it checks GitHub for new releases, shows an **Update** button in the menu bar panel and the sidebar, and installs updates on its own while no Skillbook window is open. Turn either off in Settings → General → Updates. Versions before 1.0.2 don't have the updater, so run the install command once more to get it.
 
 ### Or download the zip
 

@@ -4,12 +4,20 @@ import SwiftUI
 @main
 struct SkillbookApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
-    @State private var store = SkillStore()
+    @State private var store: SkillStore
+    @State private var updater: Updater
+
+    init() {
+        let store = SkillStore()
+        _store = State(initialValue: store)
+        _updater = State(initialValue: Updater(hasUnsavedEdits: { [weak store] in store?.hasUnsavedEdits ?? false }))
+    }
 
     var body: some Scene {
         MenuBarExtra {
             MenuBarView()
                 .environment(store)
+                .environment(updater)
         } label: {
             Image(systemName: "book")
         }
@@ -18,6 +26,7 @@ struct SkillbookApp: App {
         Window("Skillbook", id: "manager") {
             ManagerView()
                 .environment(store)
+                .environment(updater)
                 .frame(minWidth: 960, minHeight: 580)
         }
         .defaultSize(width: 1240, height: 800)
@@ -25,11 +34,16 @@ struct SkillbookApp: App {
         .windowToolbarStyle(.unified)
         .commands {
             CommandGroup(replacing: .newItem) {}
+            CommandGroup(after: .appInfo) {
+                Button("Check for Updates…") { Task { await updater.checkInteractively() } }
+                    .disabled(updater.isBusy)
+            }
         }
 
         Settings {
             SettingsView()
                 .environment(store)
+                .environment(updater)
         }
     }
 }

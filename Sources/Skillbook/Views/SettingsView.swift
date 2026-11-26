@@ -8,7 +8,7 @@ struct SettingsView: View {
             ScanSettings().tabItem { Label("Locations", systemImage: "folder.badge.gearshape") }
             AboutSettings().tabItem { Label("About", systemImage: "info.circle") }
         }
-        .frame(width: 540, height: 420)
+        .frame(width: 540, height: 480)
     }
 }
 
@@ -32,6 +32,7 @@ private struct GeneralSettings: View {
                 Toggle("Rescan when skills change on disk", isOn: $settings.watchForChanges)
                     .onChange(of: settings.watchForChanges) { _, _ in store.configureWatcher() }
             }
+            UpdateSettingsSection()
             Section("Show") {
                 Toggle("Old plugin versions and marketplace catalog copies", isOn: $settings.showPluginExtras)
                 Toggle("SKILL.md files that fail the skill check", isOn: $settings.showUnverified)
@@ -114,12 +115,15 @@ private struct ScanSettings: View {
 }
 
 private struct AboutSettings: View {
+    @Environment(Updater.self) private var updater
+
     var body: some View {
         VStack(spacing: 12) {
             Image(nsImage: NSApp.applicationIconImage)
                 .resizable()
                 .frame(width: 84, height: 84)
             Text("Skillbook").font(.title.weight(.semibold))
+            Text("Version \(updater.currentVersion)").font(.callout).foregroundStyle(.secondary)
             Text("Find, preview and manage agent skills on this Mac.")
                 .foregroundStyle(.secondary)
             VStack(alignment: .leading, spacing: 6) {

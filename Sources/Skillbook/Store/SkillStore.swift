@@ -28,6 +28,8 @@ final class SkillStore {
     private(set) var lastDuration: TimeInterval = 0
     var toast: Toast?
     var focusRequest: FocusRequest?
+    /// The editor holds changes that aren't saved yet. Updates wait for these.
+    var hasUnsavedEdits = false
 
     @ObservationIgnored private var watcher: FileWatcher?
     @ObservationIgnored private var pendingRescan: Task<Void, Never>?

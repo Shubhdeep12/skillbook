@@ -43,6 +43,8 @@ struct SkillDetailView: View {
         .onChange(of: skill.modified) { _, _ in
             if !isDirty { load() }
         }
+        .onChange(of: isDirty, initial: true) { _, dirty in store.hasUnsavedEdits = dirty }
+        .onDisappear { store.hasUnsavedEdits = false }
     }
 
     private func load() {

@@ -36,7 +36,13 @@ struct SidebarView: View {
             }
         }
         .listStyle(.sidebar)
-        .safeAreaInset(edge: .bottom) { scanStatus }
+        .safeAreaInset(edge: .bottom) {
+            VStack(spacing: 0) {
+                UpdateBanner().padding(.horizontal, 10).padding(.top, 8)
+                scanStatus
+            }
+            .background(.bar)
+        }
     }
 
     private func row(_ item: SidebarItem, _ title: String, _ symbol: String, count: Int) -> some View {

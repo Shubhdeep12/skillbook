@@ -15,6 +15,9 @@ struct MenuBarView: View {
     var body: some View {
         VStack(spacing: 0) {
             header
+            UpdateBanner()
+                .padding(.horizontal, 12)
+                .padding(.bottom, 10)
             Divider().opacity(0.5)
             if let id = peekID, let skill = store.skill(id: id) {
                 QuickLookPane(skill: skill, onBack: { withAnimation(.snappy(duration: 0.22)) { peekID = nil } }, openManager: openManager)
