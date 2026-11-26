@@ -39,7 +39,8 @@ const points = [
             <a href={RELEASES_URL} data-asset="mac-arm64">Apple Silicon <span>.zip<span data-size></span></span></a>
           </div>
         </div>
-        <p class="hint-sm">Builds aren't signed yet. Right-click Skillbook and choose Open the first time.</p>
+        <p class="hint-sm">Skillbook isn't notarized by Apple yet, so the first launch shows "Apple could not verify Skillbook". Click Done, then open System Settings → Privacy &amp; Security and click <b>Open Anyway</b>. Or run this once in Terminal:</p>
+        <pre><code>xattr -dr com.apple.quarantine /Applications/Skillbook.app</code></pre>
       </details>
 
       <details class="more" id="source">

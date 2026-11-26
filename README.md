@@ -8,7 +8,13 @@ A macOS menu bar app that finds every agent skill (`SKILL.md`) on your Mac and l
 
 Get the latest `Skillbook-<version>-mac-arm64.zip` from the [Releases](https://github.com/Shubhdeep12/skillbook/releases) page, unzip it, and move **Skillbook.app** to Applications. It needs macOS 15 or later on Apple Silicon.
 
-The build isn't signed yet, so on first launch right-click the app and choose **Open**, or run:
+Skillbook isn't notarized by Apple yet, so the first launch shows *"Apple could not verify “Skillbook” is free of malware"*. To open it anyway:
+
+1. Click **Done** in that dialog.
+2. Open **System Settings → Privacy & Security**, scroll down, and click **Open Anyway** next to the Skillbook message.
+3. Confirm with your password. After that it opens normally.
+
+Or skip the dialog by running this once in Terminal:
 
 ```sh
 xattr -dr com.apple.quarantine /Applications/Skillbook.app
