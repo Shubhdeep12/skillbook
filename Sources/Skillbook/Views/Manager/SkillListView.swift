@@ -127,7 +127,9 @@ struct SkillListView: View {
         ForEach(list) { skill in
             SkillRow(skill: skill, showLocation: !showSections && !isSingleLocation)
                 .tag(skill.id)
-                .onDrag {
+                // itemProvider uses the list's own drag handling. onDrag adds a drag
+                // gesture to each row that competes with the click that selects it.
+                .itemProvider {
                     NSItemProvider(object: skill.folderURL.resolvingSymlinksInPath() as NSURL)
                 }
         }
