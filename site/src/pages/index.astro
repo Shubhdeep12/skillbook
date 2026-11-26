@@ -111,6 +111,8 @@ scripts/build-app.sh --install</code></pre>
     if (t === 'system') html.removeAttribute('data-theme'); else html.setAttribute('data-theme', t);
     try { if (t === 'system') localStorage.removeItem('theme'); else localStorage.setItem('theme', t); } catch {}
     syncTheme();
+  }));
+  syncTheme();
 
   // ---- show the first-launch steps for the .zip ----
   const firstLaunch = document.getElementById('first-launch') as HTMLDetailsElement | null;
@@ -120,15 +122,19 @@ scripts/build-app.sh --install</code></pre>
   // ---- copy the install command ----
   const copyBtn = document.querySelector<HTMLButtonElement>('[data-copy]');
   copyBtn?.addEventListener('click', async () => {
-    const cmd = document.querySelector('[data-cmd]')!.textContent!.trim();
-    try { await navigator.clipboard.writeText(cmd); } catch { return; }
+    const code = document.querySelector<HTMLElement>('[data-cmd]')!;
+    try {
+      await navigator.clipboard.writeText(code.textContent!.trim());
+    } catch {
+      // No clipboard access (old browser, insecure context): select the text so Cmd-C works.
+      getSelection()?.selectAllChildren(code);
+      return;
+    }
     const label = copyBtn.querySelector('[data-copy-label]')!;
     label.textContent = 'Copied';
     copyBtn.classList.add('done');
     setTimeout(() => { label.textContent = 'Copy'; copyBtn.classList.remove('done'); }, 1600);
   });
-  }));
-  syncTheme();
 
   // ---- download: point the button at the latest release's Apple Silicon build ----
   type Asset = { name: string; browser_download_url: string; size: number };
