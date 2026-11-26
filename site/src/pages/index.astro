@@ -1,0 +1,190 @@
+---
+import Base from '../layouts/Base.astro';
+import PixelField from '../components/PixelField.astro';
+import Demo from '../components/Demo.astro';
+import logo from '../../public/favicon.svg?raw';
+import { REPO, REPO_URL, RELEASES_URL } from '../site';
+
+const year = new Date().getFullYear();
+
+const points = [
+  ['Every skill, found', 'User, project, plugin and built-in skills for Claude, Cursor, Codex, Gemini and more. Old plugin copies are folded away.'],
+  ['Checked as it reads', 'Each SKILL.md is checked for frontmatter, a description and a clean name, and the editor re-checks as you type.'],
+  ['Moved like files', 'Copy or move skills between your user folder and any repo. Drag, paste, duplicate, rename, all from the menu bar.'],
+];
+---
+<Base title="Skillbook · Every agent skill on your Mac">
+  <PixelField />
+  <main>
+    <div class="col hero">
+      <div class="logo" aria-hidden="true" set:html={logo} />
+
+      <h1>Skillbook</h1>
+      <p class="tagline">Every agent skill on your Mac, in one place. Preview, check and edit them right from the menu bar.</p>
+
+      <div class="cta">
+        <a class="btn" href={RELEASES_URL} data-primary-download>
+          <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1v9m0 0L4.5 6.5M8 10l3.5-3.5M2 13.5h12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" /></svg>
+          <span data-primary-label>Download for macOS</span>
+        </a>
+        <span class="req" data-req>Free · macOS 15 or later · Apple Silicon</span>
+      </div>
+
+      <details class="more" id="downloads" data-repo={REPO}>
+        <summary>All downloads</summary>
+        <p data-release-status>From <a href={RELEASES_URL}>GitHub Releases</a>.</p>
+        <div class="files">
+          <div class="frow is-rec" data-os="mac">
+            <b>macOS</b>
+            <a href={RELEASES_URL} data-asset="mac-arm64">Apple Silicon <span>.zip<span data-size></span></span></a>
+          </div>
+        </div>
+        <p class="hint-sm">Builds aren't signed yet. Right-click Skillbook and choose Open the first time.</p>
+      </details>
+
+      <details class="more" id="source">
+        <summary>Build from source</summary>
+        <p>Needs only the Xcode Command Line Tools.</p>
+        <pre><code>git clone {REPO_URL}.git
+cd skillbook
+scripts/build-app.sh --install</code></pre>
+      </details>
+    </div>
+
+    <Demo />
+
+    <div class="col">
+      <ul class="points">
+        {points.map(([t, d]) => <li><h2>{t}</h2><p>{d}</p></li>)}
+      </ul>
+
+      <footer>
+        <div class="frow-foot">
+          &copy; {year} Skillbook · MIT
+          <span class="sep">·</span><a href={REPO_URL}>GitHub</a>
+          <span class="sep">·</span><a href={`${REPO_URL}/issues`}>Issues</a>
+          <span class="sep">·</span><a href="https://okshubh.in">okshubh.in</a>
+        </div>
+        <div class="theme-switch" role="group" aria-label="Color theme">
+          <button type="button" data-theme-choice="system" aria-pressed="true">System</button>
+          <button type="button" data-theme-choice="light" aria-pressed="false">Light</button>
+          <button type="button" data-theme-choice="dark" aria-pressed="false">Dark</button>
+        </div>
+        <p class="fine">Not affiliated with Anthropic, Cursor, OpenAI or Google. Product names belong to their owners.</p>
+      </footer>
+    </div>
+  </main>
+</Base>
+
+<script>
+  // ---- theme switch (System / Light / Dark) ----
+  const html = document.documentElement;
+  const themeBtns = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-theme-choice]'));
+  const currentTheme = () => html.getAttribute('data-theme') || 'system';
+  const syncTheme = () => themeBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.themeChoice === currentTheme())));
+  themeBtns.forEach((b) => b.addEventListener('click', () => {
+    const t = b.dataset.themeChoice!;
+    if (t === 'system') html.removeAttribute('data-theme'); else html.setAttribute('data-theme', t);
+    try { if (t === 'system') localStorage.removeItem('theme'); else localStorage.setItem('theme', t); } catch {}
+    syncTheme();
+  }));
+  syncTheme();
+
+  // ---- download: point the button at the latest release's Apple Silicon build ----
+  type Asset = { name: string; browser_download_url: string; size: number };
+  const repo = document.querySelector<HTMLElement>('#downloads')?.dataset.repo;
+  (async () => {
+    const primary = document.querySelector<HTMLAnchorElement>('[data-primary-download]')!;
+    let rel: { assets: Asset[] } | null = null;
+    try {
+      const r = await fetch(`https://api.github.com/repos/${repo}/releases/latest`, { headers: { Accept: 'application/vnd.github+json' } });
+      if (r.ok) rel = await r.json();
+    } catch {}
+    if (!rel) {
+      document.querySelector('[data-release-status]')!.innerHTML = 'No release yet. Build from source for now.';
+      document.querySelector('[data-req]')!.textContent = 'First release soon · build from source for now';
+      primary.href = '#source';
+      primary.addEventListener('click', () => { (document.getElementById('source') as HTMLDetailsElement).open = true; });
+      return;
+    }
+    const asset = (rel.assets || []).find((a) => /mac-arm64\.(zip|dmg)$/i.test(a.name));
+    if (!asset) { primary.href = '#downloads'; return; }
+    primary.href = asset.browser_download_url;
+    const link = document.querySelector<HTMLAnchorElement>('[data-asset="mac-arm64"]')!;
+    link.href = asset.browser_download_url;
+    link.querySelector('[data-size]')!.textContent = ` · ${Math.max(1, Math.round(asset.size / 1048576))} MB`;
+  })();
+</script>
+
+<style>
+  main { position: relative; z-index: 1; }
+
+  .hero { padding-top: 88px; }
+  .logo {
+    width: 64px; height: 64px; animation: rise .7s cubic-bezier(.2, .8, .2, 1) .05s both;
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .12)) drop-shadow(0 10px 18px rgba(0, 0, 0, .22));
+  }
+  .logo :global(svg) { width: 64px; height: 64px; border-radius: 22.5%; }
+  @keyframes rise { from { opacity: 0; transform: translateY(6px) scale(.96); } }
+
+  .sep { margin: 0 9px; color: var(--muted); opacity: .6; }
+
+  h1 { margin: 32px 0 8px; font-size: clamp(40px, 6vw, 54px); line-height: 1.02; letter-spacing: -.035em; font-weight: 700; }
+  .tagline { margin: 0; font-size: 19.5px; line-height: 1.55; color: var(--ink-2); max-width: 36em; text-wrap: pretty; }
+
+  .cta { margin: 34px 0 22px; display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 9px; height: 48px; padding: 0 22px; border-radius: 999px;
+    background: var(--ink); color: var(--paper); font: 500 15.5px/1 var(--sans); text-decoration: none; white-space: nowrap;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, .12) inset, 0 8px 20px -10px rgba(0, 0, 0, .5); transition: opacity .15s, transform .12s;
+  }
+  .btn:hover { opacity: .86; }
+  .btn:active { transform: translateY(1px); }
+  .req { font-size: 14px; color: var(--muted); }
+
+  .more { margin: 0; padding: 6px 0; font-size: 15px; color: var(--ink-2); }
+  .more summary { cursor: pointer; color: var(--muted); font-size: 14px; list-style: none; width: max-content; }
+  .more summary::-webkit-details-marker { display: none; }
+  .more summary::before { content: '▸'; display: inline-block; width: 1.1em; transition: transform .15s; }
+  .more[open] summary::before { transform: rotate(90deg); }
+  .more summary:hover { color: var(--ink); }
+  .more > :not(summary) { margin-left: 1.1em; }
+  .more p { margin: 10px 0; }
+  .more ul { margin: 8px 0 12px; padding-left: 18px; }
+  .more li { margin: 4px 0; }
+  .more a { color: var(--ink); }
+  .more code { background: var(--code-bg); border-radius: 4px; padding: 1px 5px; }
+  .more pre { margin: 8px 0 10px 1.1em; padding: 14px 16px; border-radius: 10px; background: var(--mock-bg); color: var(--mock-text); font-size: 13px; line-height: 1.7; overflow-x: auto; }
+  .more pre code { background: none; padding: 0; }
+
+  .files { display: grid; gap: 6px; margin: 4px 0 10px 1.1em; }
+  .frow { display: grid; grid-template-columns: 84px minmax(0, 220px); gap: 8px; align-items: center; }
+  .frow b { font-weight: 600; color: var(--ink); }
+  .frow.is-rec b::after { content: ' ●'; color: var(--accent); font-size: 10px; vertical-align: 2px; }
+  .frow a { display: flex; justify-content: space-between; gap: 8px; padding: 7px 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); text-decoration: none; font-size: 14px; }
+  .frow a:hover { border-color: var(--ink); }
+  .frow a span { font: 12px/1.6 var(--mono); color: var(--muted); white-space: nowrap; }
+
+  .hint-sm { font-size: 13.5px; color: var(--muted); }
+
+  .points { list-style: none; margin: 64px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+  .points h2 { margin: 0 0 6px; font-size: 17px; font-weight: 600; letter-spacing: -.01em; color: var(--ink); }
+  .points p { margin: 0; font-size: 15px; line-height: 1.5; color: var(--muted); text-wrap: pretty; }
+
+  footer { margin: 56px 0 0; padding: 0 0 48px; font-size: 14px; color: var(--muted); }
+  .frow-foot a { color: var(--muted); text-underline-offset: 3px; }
+  .frow-foot a:hover { color: var(--ink); }
+  .theme-switch { display: inline-flex; margin-top: 16px; padding: 3px; gap: 2px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); }
+  .theme-switch button { font: 500 13px/1 var(--sans); padding: 7px 11px; border: 0; border-radius: 6px; background: transparent; color: var(--ink-2); cursor: pointer; }
+  .theme-switch button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+  .fine { margin: 18px 0 0; font-size: 12.5px; }
+
+  @media (max-width: 720px) {
+    .hero { padding-top: 48px; }
+    .tagline { font-size: 17.5px; }
+    .cta { gap: 12px; }
+    .frow { grid-template-columns: 1fr 1fr; }
+    .frow b { grid-column: 1 / -1; }
+    .points { grid-template-columns: 1fr; gap: 22px; margin-top: 44px; }
+  }
+</style>

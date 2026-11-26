@@ -1,0 +1,62 @@
+name: Release
+
+# Push a tag like v1.0 (matching CFBundleShortVersionString in Resources/Info.plist)
+# to build Skillbook.app, zip it and publish a GitHub Release. The website's
+# Download button links to the *-mac-arm64.zip from the latest release.
+# Run it manually (Actions → Release → Run workflow) to build without releasing;
+# the zip is attached to the run as an artifact.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check tag matches Info.plist version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          version="v$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' Resources/Info.plist)"
+          if [ "$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match Info.plist version $version"
+            exit 1
+          fi
+
+      - name: Build and zip
+        run: scripts/build-app.sh --zip
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: skillbook-macos
+          if-no-files-found: error
+          path: build/Skillbook-*.zip
+
+  release:
+    name: Publish GitHub Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist
+          pattern: skillbook-*
+          merge-multiple: true
+
+      - name: Checksums
+        working-directory: dist
+        run: sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt
+
+      - uses: softprops/action-gh-release@v3
+        with:
+          files: dist/*
+          generate_release_notes: true
+          fail_on_unmatched_files: true
