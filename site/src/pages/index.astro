@@ -3,9 +3,10 @@ import Base from '../layouts/Base.astro';
 import PixelField from '../components/PixelField.astro';
 import Demo from '../components/Demo.astro';
 import logo from '../../public/favicon.svg?raw';
-import { REPO, REPO_URL, RELEASES_URL } from '../site';
+import { REPO, REPO_URL, RELEASES_URL, url } from '../site';
 
 const year = new Date().getFullYear();
+const installCmd = `curl -fsSL ${new URL(url('install.sh'), Astro.site).href} | bash`;
 
 const points = [
   ['Every skill, found', 'User, project, plugin and built-in skills for Claude, Cursor, Codex, Gemini and more. Old plugin copies are folded away.'],
@@ -22,12 +23,22 @@ const points = [
       <h1>Skillbook</h1>
       <p class="tagline">Every agent skill on your Mac, in one place. Preview, check and edit them right from the menu bar.</p>
 
+      <div class="install" data-install>
+        <span class="prompt" aria-hidden="true">$</span>
+        <code data-cmd>{installCmd}</code>
+        <button type="button" class="copy" data-copy aria-label="Copy install command">
+          <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><rect x="5" y="5" width="9" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+          <span data-copy-label>Copy</span>
+        </button>
+      </div>
+      <p class="req">Paste into Terminal. It installs Skillbook to Applications and opens it, without the "Apple could not verify" warning. <span data-req>Free · macOS 15 or later · Apple Silicon</span></p>
+
       <div class="cta">
-        <a class="btn" href={RELEASES_URL} data-primary-download>
+        <a class="btn ghost" href={RELEASES_URL} data-primary-download>
           <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1v9m0 0L4.5 6.5M8 10l3.5-3.5M2 13.5h12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" /></svg>
-          <span data-primary-label>Download for macOS</span>
+          <span data-primary-label>Or download the .zip</span>
         </a>
-        <span class="req" data-req>Free · macOS 15 or later · Apple Silicon</span>
+        <a class="install-src" href={url('install.sh')}>View the install script</a>
       </div>
 
       <details class="more" id="downloads" data-repo={REPO}>
@@ -88,6 +99,17 @@ scripts/build-app.sh --install</code></pre>
     if (t === 'system') html.removeAttribute('data-theme'); else html.setAttribute('data-theme', t);
     try { if (t === 'system') localStorage.removeItem('theme'); else localStorage.setItem('theme', t); } catch {}
     syncTheme();
+
+  // ---- copy the install command ----
+  const copyBtn = document.querySelector<HTMLButtonElement>('[data-copy]');
+  copyBtn?.addEventListener('click', async () => {
+    const cmd = document.querySelector('[data-cmd]')!.textContent!.trim();
+    try { await navigator.clipboard.writeText(cmd); } catch { return; }
+    const label = copyBtn.querySelector('[data-copy-label]')!;
+    label.textContent = 'Copied';
+    copyBtn.classList.add('done');
+    setTimeout(() => { label.textContent = 'Copy'; copyBtn.classList.remove('done'); }, 1600);
+  });
   }));
   syncTheme();
 
@@ -133,7 +155,27 @@ scripts/build-app.sh --install</code></pre>
   h1 { margin: 32px 0 8px; font-size: clamp(40px, 6vw, 54px); line-height: 1.02; letter-spacing: -.035em; font-weight: 700; }
   .tagline { margin: 0; font-size: 19.5px; line-height: 1.55; color: var(--ink-2); max-width: 36em; text-wrap: pretty; }
 
-  .cta { margin: 34px 0 22px; display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+  .install {
+    margin: 34px 0 0; display: flex; align-items: center; gap: 10px; max-width: 100%;
+    padding: 8px 8px 8px 18px; border-radius: 14px; background: var(--mock-bg); color: var(--mock-text);
+    box-shadow: 0 0 0 1px var(--mock-ring), 0 14px 30px -18px rgba(0, 0, 0, .55);
+    font: 14px/1.4 var(--mono);
+  }
+  .install .prompt { color: var(--mock-muted); user-select: none; }
+  .install code { flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; font-size: 14px; scrollbar-width: none; }
+  .install code::-webkit-scrollbar { display: none; }
+  .copy {
+    flex: none; display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border: 0; border-radius: 9px;
+    background: rgba(255, 255, 255, .1); color: var(--mock-text); font: 500 13px/1 var(--sans); cursor: pointer; transition: background .15s;
+  }
+  .copy:hover { background: rgba(255, 255, 255, .17); }
+  .copy.done { color: #30d158; }
+  .install + .req { margin: 12px 0 0; max-width: 40em; line-height: 1.5; }
+  .btn.ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); height: 42px; font-size: 14.5px; }
+  .btn.ghost:hover { opacity: 1; box-shadow: inset 0 0 0 1px var(--ink); }
+  .install-src { font-size: 14px; color: var(--muted); text-underline-offset: 3px; }
+  .install-src:hover { color: var(--ink); }
+  .cta { margin: 22px 0 22px; display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
   .btn {
     display: inline-flex; align-items: center; gap: 9px; height: 48px; padding: 0 22px; border-radius: 999px;
     background: var(--ink); color: var(--paper); font: 500 15.5px/1 var(--sans); text-decoration: none; white-space: nowrap;

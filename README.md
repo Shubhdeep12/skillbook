@@ -4,7 +4,17 @@
 
 A macOS menu bar app that finds every agent skill (`SKILL.md`) on your Mac and lets you preview, edit, copy, move and organise them.
 
-## Download
+## Install
+
+Paste this into Terminal:
+
+```sh
+curl -fsSL https://skillbook.okshubh.in/install.sh | bash
+```
+
+It downloads the latest release, puts Skillbook.app in `/Applications` (or `~/Applications`) and opens it. Installing this way skips the "Apple could not verify" warning, because files downloaded with curl aren't quarantined. The script is [`site/public/install.sh`](site/public/install.sh). Run the same command again to update.
+
+### Or download the zip
 
 Get the latest `Skillbook-<version>-mac-arm64.zip` from the [Releases](https://github.com/Shubhdeep12/skillbook/releases) page, unzip it, and move **Skillbook.app** to Applications. It needs macOS 15 or later on Apple Silicon.
 
