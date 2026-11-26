@@ -9,12 +9,11 @@ cd "$(dirname "$0")/.."
 # The macOS 27 SDK needs SwiftUI's macro plugin, which ships only with Xcode.
 # Use the newest SDK that builds without it unless SDK is set.
 if [[ -z "${SDK:-}" ]]; then
-  if xcode-select -p | grep -q Xcode.app; then
-    SDK="$(xcrun --show-sdk-path)"
-  else
-    SDK="$(ls -d /Library/Developer/CommandLineTools/SDKs/MacOSX26*.sdk 2>/dev/null | sort -V | tail -1)"
-    SDK="${SDK:-$(xcrun --show-sdk-path)}"
+  if [[ "$(xcode-select -p 2>/dev/null || true)" == *CommandLineTools* ]]; then
+    SDK="$(ls -d /Library/Developer/CommandLineTools/SDKs/MacOSX26*.sdk 2>/dev/null | sort -V | tail -1 || true)"
   fi
+  # Full Xcode (including GitHub's macOS runners) ships the macro plugin, so its default SDK works.
+  SDK="${SDK:-$(xcrun --sdk macosx --show-sdk-path)}"
 fi
 ARCH="$(uname -m)"
 APP=build/Skillbook.app
