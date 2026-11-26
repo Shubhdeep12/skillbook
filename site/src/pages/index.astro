@@ -31,7 +31,7 @@ const points = [
           <span data-copy-label>Copy</span>
         </button>
       </div>
-      <p class="req">Paste into Terminal. It installs Skillbook to Applications and opens it, without the "Apple could not verify" warning. <span data-req>Free · macOS 15 or later · Apple Silicon</span></p>
+      <p class="req">Paste into Terminal. It installs Skillbook to Applications and opens it. Run it again to update. <span data-req>Free · macOS 15 or later · Apple Silicon</span></p>
 
       <div class="cta">
         <a class="btn ghost" href={RELEASES_URL} data-primary-download>
@@ -40,6 +40,19 @@ const points = [
         </a>
         <a class="install-src" href={url('install.sh')}>View the install script</a>
       </div>
+
+      <details class="more" id="first-launch">
+        <summary>Downloaded the .zip? How to open it the first time</summary>
+        <p>macOS checks apps downloaded in a browser, and Skillbook isn't notarized by Apple yet, so the first launch needs one extra step:</p>
+        <ol>
+          <li>Unzip the download and drag <b>Skillbook</b> into Applications.</li>
+          <li>Open Skillbook. macOS says it can't verify the app. Click <b>Done</b>, not Move to Trash.</li>
+          <li>Open <b>System Settings → Privacy &amp; Security</b>, scroll down, and click <b>Open Anyway</b> next to Skillbook.</li>
+          <li>Enter your password and click <b>Open</b>. From then on it opens normally.</li>
+        </ol>
+        <p>Or skip those steps by running this once in Terminal:</p>
+        <pre><code>xattr -dr com.apple.quarantine /Applications/Skillbook.app</code></pre>
+      </details>
 
       <details class="more" id="downloads" data-repo={REPO}>
         <summary>All downloads</summary>
@@ -50,8 +63,7 @@ const points = [
             <a href={RELEASES_URL} data-asset="mac-arm64">Apple Silicon <span>.zip<span data-size></span></span></a>
           </div>
         </div>
-        <p class="hint-sm">Skillbook isn't notarized by Apple yet, so the first launch shows "Apple could not verify Skillbook". Click Done, then open System Settings → Privacy &amp; Security and click <b>Open Anyway</b>. Or run this once in Terminal:</p>
-        <pre><code>xattr -dr com.apple.quarantine /Applications/Skillbook.app</code></pre>
+        <p class="hint-sm">After downloading, see <a href="#first-launch" data-open-first-launch>how to open it the first time</a>.</p>
       </details>
 
       <details class="more" id="source">
@@ -99,6 +111,11 @@ scripts/build-app.sh --install</code></pre>
     if (t === 'system') html.removeAttribute('data-theme'); else html.setAttribute('data-theme', t);
     try { if (t === 'system') localStorage.removeItem('theme'); else localStorage.setItem('theme', t); } catch {}
     syncTheme();
+
+  // ---- show the first-launch steps for the .zip ----
+  const firstLaunch = document.getElementById('first-launch') as HTMLDetailsElement | null;
+  document.querySelectorAll('[data-primary-download], [data-asset], [data-open-first-launch]').forEach((el) =>
+    el.addEventListener('click', () => { if (firstLaunch) firstLaunch.open = true; }));
 
   // ---- copy the install command ----
   const copyBtn = document.querySelector<HTMLButtonElement>('[data-copy]');
@@ -192,8 +209,8 @@ scripts/build-app.sh --install</code></pre>
   .more[open] summary::before { transform: rotate(90deg); }
   .more summary:hover { color: var(--ink); }
   .more > :not(summary) { margin-left: 1.1em; }
-  .more p { margin: 10px 0; }
-  .more ul { margin: 8px 0 12px; padding-left: 18px; }
+  .more p { margin-top: 10px; margin-bottom: 10px; }
+  .more ul, .more ol { margin-top: 8px; margin-bottom: 12px; padding-left: 20px; }
   .more li { margin: 4px 0; }
   .more a { color: var(--ink); }
   .more code { background: var(--code-bg); border-radius: 4px; padding: 1px 5px; }
